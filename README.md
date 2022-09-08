@@ -45,9 +45,11 @@ fmt::print("Username: {}\n", userName);
 - bool Passed();
 - std::vector<const char*> Args();
 - void DefineFlagValue(const std::shared_ptr<FlagOption>& flagAva, const char* flagArg);
+- Float64(double* intPtr, const char* flagName, double defaultValue, const char* flagDesc);
 
 ### Supported values
 
 - FLAG_INTEGER (int)
 - FLAG_UNSIGNED_INTEGER (unsigned int)
 - FLAG_STRING (const char*)
+- FLAG_FLOAT_64 (double)

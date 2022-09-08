@@ -11,7 +11,7 @@ namespace BetterFlag {
 
     enum FlagType {
         FLAG_INTEGER, FLAG_UNSIGNED_INTEGER,
-        FLAG_STRING
+        FLAG_STRING, FLAG_FLOAT_64
 
     };
 
@@ -47,7 +47,6 @@ namespace BetterFlag {
                 std::snprintf(usageBuffer, sizeof(usageBuffer),
                               "-%s ?", flagOpt->mFlagName);
                 switch (flagOpt->mType) {
-
                 #define FLAG_FILL_USAGE_BUFFER(valueType, flagOut, format, ...) \
                 sprintf(strpbrk(usageBuffer, "?"), valueType"\n\t?");\
                     snprintf(strpbrk(usageBuffer, "?"),\
@@ -55,6 +54,10 @@ namespace BetterFlag {
                     sprintf(strpbrk(usageBuffer, "?"), format")",\
                     __VA_ARGS__)
 
+                case FLAG_FLOAT_64:
+                    FLAG_FILL_USAGE_BUFFER("float64", flagOpt, "%lf",
+                                           *reinterpret_cast<double*>(flagOpt->mDefaultValue));
+                    break;
                 case FLAG_INTEGER:
                     FLAG_FILL_USAGE_BUFFER("int", flagOpt, "%d",
                                            *reinterpret_cast<int*>(flagOpt->mDefaultValue));
@@ -135,6 +138,9 @@ namespace BetterFlag {
             /* Setting defaults before starts */
             for (const auto& flagOption : mAvaFlags) {
                 switch (flagOption->mType) {
+                case FLAG_FLOAT_64:
+                    *static_cast<double*>(flagOption->mFlagValuePtr) = *reinterpret_cast<double*>(flagOption->mDefaultValue);
+                    break;
                 case FLAG_INTEGER:
                     *static_cast<int*>(flagOption->mFlagValuePtr) = *reinterpret_cast<int*>(flagOption->mDefaultValue);
                     break;
@@ -182,6 +188,14 @@ namespace BetterFlag {
             }
             mStatus = FlagStatus::FLAG_PARSED;
         }
+
+        [[maybe_unused]] void Float64(double* intPtr, const char* flagName, double defaultValue, const char* flagDesc) {
+            auto flagInt = std::make_shared<FlagOption>(
+                    FlagType::FLAG_FLOAT_64, static_cast<void*>(intPtr), flagName, flagDesc);
+            *reinterpret_cast<double*>(flagInt->mDefaultValue) = defaultValue;
+            mAvaFlags.push_back(flagInt);
+        }
+
         [[maybe_unused]] void UIntVar(unsigned int* intPtr, const char* flagName, unsigned int defaultValue,
                                       const char* flagDesc) {
             auto flagInt = std::make_shared<FlagOption>(
@@ -214,6 +228,10 @@ namespace BetterFlag {
     private:
         void DefineFlagValue(const std::shared_ptr<FlagOption>& flagAva, const char* flagArg) {
             switch (flagAva->mType) {
+            case FLAG_FLOAT_64:
+                *static_cast<double*>(flagAva->mFlagValuePtr) =
+                        static_cast<double>(strtod(flagArg, nullptr));
+                break;
             case FLAG_INTEGER:
                 *static_cast<int*>(flagAva->mFlagValuePtr) =
                         static_cast<int>(strtoul(flagArg, nullptr, 0));

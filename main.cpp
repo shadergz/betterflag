@@ -11,11 +11,11 @@ void PrintAllOptions(const std::shared_ptr<BetterFlag::FlagOption>& flagOption) 
 int main(int argc, char **argv) {
     BetterFlag::Flag flag(argc, const_cast<const char**>(argv));
 
-    unsigned int xValue{};
+    double xValue{};
 
     char *userName;
 
-    flag.UIntVar(&xValue, "xValue", 100, "Define X value, default is 100");
+    flag.Float64(&xValue, "xValue", 100, "Define X value, default is 100");
     flag.StringVar(&userName, "username", "Gabriel Correia", "Setups user name");
 
     flag.Parse();
